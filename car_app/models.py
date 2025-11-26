@@ -5,7 +5,7 @@ from django.db import models
 
 class Car(models.Model):
     name = models.CharField(max_length=120)
-    photo = models.ImageField(upload_to='photos/')
+    photo = models.ImageField(upload_to='photos/',blank=True, null=True)
     color = models.CharField(max_length=15)
     type = models.CharField(max_length=50)
     price = models.CharField()
