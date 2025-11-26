@@ -1,122 +1,95 @@
-from gc import get_objects
-from logging import exception
-
-from django.core.serializers import serialize
-from django.shortcuts import render
-
-# Create your views here.
-
-from django.shortcuts import render
-from .models import Car
-from .serializers import CarSerializer
-from rest_framework import generics
+from django.http import Http404
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework import generics
+
+from .models import phone
+from .serializers import CarSerializer
 
 
-#class BookListApiView(generics.ListAPIView):
-#    queryset = Book.objects.all()
-#    serializer_class = BookSerializer
-class CarListApiView(APIView):
+class PhoneListApiView(APIView):
     def get(self, request):
-        cars=Car.objects.all()
-        serializer=CarSerializer(cars,many=True)
+        phones = phone.objects.all()
+        serializer = CarSerializer(phones, many=True)
         return Response(serializer.data)
 
-#class BookCreateApiView(generics.CreateAPIView):
-#    queryset = Book.objects.all()
-#    serializer_class = BookSerializer
-class CarCreateApiView(APIView):
-    def post(self,request):
-        try:
-            serializer=CarSerializer(data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data)
-            else:
-                return Response({"status":"Nimadur xatto ketdi"})
-        except:
-            return Response({"status":"Nimadur xatto ketdi"})
-
-#class BookEditApiView(generics.UpdateAPIView):
-#    queryset = Book.objects.all()
-#    serializer_class = BookSerializer
-class CarEditApiView(APIView):
-    def put(self,request,pk):
-        cars=Car.objects.get(id=pk)
-        serializer=CarSerializer(cars,data=request.data)
+class PhoneCreateApiView(APIView):
+    def post(self, request):
+        serializer = CarSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response({"xabar":"boldi yangilandi","yangilangani":serializer.data})
-        else:
-            return  Response({"javob":"Edit qilinmadi"})
+            return Response(serializer.data, status=201)
+        return Response(serializer.errors, status=400)
 
-    def patch(self,request,pk):
-        cars=Car.objects.get(id=pk)
-        serializer=CarSerializer(cars,data=request.data,partial=True)
+
+class PhoneEditApiView(APIView):
+
+    def get_object(self, pk):
+        try:
+            return phone.objects.get(pk=pk)
+        except phone.DoesNotExist:
+            raise Http404
+
+    def patch(self, request, pk):
+        obj = self.get_object(pk)
+        serializer = CarSerializer(obj, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
-            return Response({"xabar":"boldi yangilandi","yangilangani":serializer.data})
-        else:
-            return  Response({"javob":"Edit qilinmadi"})
-
-
-#class BookDeleteApiView(generics.DestroyAPIView):
-#    queryset = Book.objects.all()
-#    serializer_class = BookSerializer
-class CarDeleteApiView(APIView):
-    def delete(self, request,pk):
-        cars=Car.objects.get(id=pk)
-        cars.delete()
-        return Response({"xabar":"car ochirildi"})
-
-
-
-#class BookDetailApiView(generics.RetrieveAPIView):
-#    queryset = Book.objects.all()
-#    serializer_class = BookSerializer
-class CarDetailApiView(APIView):
-    def get(self,request,pk):
-        try:
-            cars=Car.objects.get(id=pk)
-            serializer=CarSerializer(cars)
             return Response(serializer.data)
-        except:
-            return Response({"xabar":"bunday id-li car yuq mavjud emas"})
+        return Response(serializer.errors, status=400)
 
-#class BookMixedApiView(generics.RetrieveUpdateDestroyAPIView):
-#    queryset = Book.objects.all()
-#    serializer_class = BookSerializer
-
-class CarMixedApiView(APIView):
-    def get(self,request,pk):
-        try:
-            cars=Car.objects.get(id=pk)
-            serializer=CarSerializer(cars)
+    def put(self, request, pk):
+        obj = self.get_object(pk)
+        serializer = CarSerializer(obj, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
             return Response(serializer.data)
-        except:
-            return Response({"xabar":"bunday id-li kitob yuq mavjud emas"})
+        return Response(serializer.errors, status=400)
 
-    def put(self,request,pk):
-        cars=Car.objects.get(id=pk)
-        serializer=CarSerializer(cars,data=request.data)
+
+
+class PhoneDeleteApiView(generics.DestroyAPIView):
+    queryset = phone.objects.all()
+    serializer_class = CarSerializer
+
+
+
+class PhoneDetailApiView(generics.RetrieveAPIView):
+    queryset = phone.objects.all()
+    serializer_class = CarSerializer
+
+
+
+class PhoneMixedApiView(APIView):
+
+    def get_object(self, pk):
+        try:
+            return phone.objects.get(pk=pk)
+        except phone.DoesNotExist:
+            raise Http404
+
+    def get(self, request, pk):
+        obj = self.get_object(pk)
+        serializer = CarSerializer(obj)
+        return Response(serializer.data)
+
+    def delete(self, request, pk):
+        obj = self.get_object(pk)
+        obj.delete()
+        return Response({"xabar": "Telefon o‘chirildi"})
+
+    def put(self, request, pk):
+        obj = self.get_object(pk)
+        serializer = CarSerializer(obj, data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response({"xabar":"boldi yangilandi","yangilangani":serializer.data})
-        else:
-            return  Response({"javob":"Edit qilinmadi"})
+            return Response({"xabar": "Telefon to‘liq yangilandi"})
+        return Response(serializer.errors, status=400)
 
-    def patch(self,request,pk):
-        cars=Car.objects.get(id=pk)
-        serializer=CarSerializer(cars,data=request.data,partial=True)
+    def patch(self, request, pk):
+        obj = self.get_object(pk)
+        serializer = CarSerializer(obj, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
-            return Response({"xabar": "boldi yangilandi", "yangilangani": serializer.data})
-        else:
-            return Response({"javob": "Edit qilinmadi"})
-
-
-def delete(self, request, pk):
-            cars = Car.objects.get(id=pk)
-            cars.delete()
-            return Response({"xabar": "car"})
+            return Response({"xabar": "Telefon qisman yangilandi"})
+        return Response(serializer.errors, status=400)

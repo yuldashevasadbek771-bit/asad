@@ -1,7 +1,7 @@
-from .models import Car
+from .models import phone
 from rest_framework import serializers
 
 class CarSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Car
+        model = phone
         fields = '__all__'
